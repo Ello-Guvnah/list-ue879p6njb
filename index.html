@@ -98,6 +98,54 @@
 
     .history-brand { margin-bottom: 10px; }
 
+    .lock-app {
+      max-width: 430px;
+      margin: 0 auto;
+      min-height: 100dvh;
+      padding: 32px 16px calc(40px + env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .lock-app[hidden] { display: none; }
+    .lock-app .app-brand { margin-bottom: 22px; text-align: center; }
+    .lock-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 18px 16px;
+    }
+    .lock-card h2 { font-size: 20px; font-weight: 650; margin-bottom: 6px; }
+    .lock-card .subtitle { margin: 0 0 16px; }
+    .lock-error {
+      color: var(--danger);
+      font-size: 14px;
+      margin: 0 0 12px;
+      min-height: 1.2em;
+    }
+    .lock-forgot {
+      display: block;
+      width: 100%;
+      margin-top: 12px;
+      padding: 10px;
+      color: var(--danger);
+      font-size: 14px;
+      font-weight: 600;
+      text-align: center;
+    }
+    .btn-danger {
+      width: 100%;
+      height: 46px;
+      border-radius: 12px;
+      background: #4a2222;
+      color: #f3c4c4;
+      border: 1px solid var(--danger);
+      font-weight: 600;
+      font-size: 15px;
+      touch-action: manipulation;
+    }
+    .btn-danger:active { opacity: 0.85; }
+
     .topbar {
       display: flex;
       align-items: center;
@@ -478,7 +526,7 @@
     }
     .add-card h2, .quick-card h2, .history-app h1 { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
     .history-app h1 { font-size: 26px; margin-bottom: 4px; }
-    .add-card label, .quick-card label, .sheet label {
+    .add-card label, .quick-card label, .sheet label, .lock-card label {
       display: block;
       font-size: 12px;
       color: var(--secondary);
@@ -488,7 +536,7 @@
     .row-2 { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 10px; }
     .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
 
-    input[type="text"], input[type="number"], select, textarea {
+    input[type="text"], input[type="number"], input[type="password"], select, textarea {
       width: 100%;
       background: #1a1a1a;
       border: 1px solid var(--border-strong);
@@ -496,7 +544,7 @@
       padding: 0 12px;
       outline: none;
     }
-    input[type="text"], input[type="number"], select { height: 44px; }
+    input[type="text"], input[type="number"], input[type="password"], select { height: 44px; }
     textarea {
       padding: 10px 12px;
       min-height: 96px;
@@ -621,7 +669,26 @@
   </style>
 </head>
 <body>
-  <div class="app" id="shopView">
+  <div class="lock-app" id="lockView" data-testid="lock-screen">
+    <h1 class="app-brand" id="lockBrand">EZ Check List</h1>
+    <form class="lock-card" id="lockForm" autocomplete="off">
+      <h2 id="lockTitle">Enter passcode</h2>
+      <p class="subtitle" id="lockHint">At least 4 characters.</p>
+      <div class="field">
+        <label for="lockPasscode" id="lockPassLabel">Passcode</label>
+        <input type="password" id="lockPasscode" data-testid="lock-passcode" minlength="4" maxlength="64" autocomplete="off" spellcheck="false">
+      </div>
+      <div class="field" id="lockConfirmWrap">
+        <label for="lockConfirm">Confirm passcode</label>
+        <input type="password" id="lockConfirm" data-testid="lock-confirm" minlength="4" maxlength="64" autocomplete="off" spellcheck="false">
+      </div>
+      <p class="lock-error" id="lockError" data-testid="lock-error" hidden></p>
+      <button type="submit" class="add-submit" id="lockSubmit" data-testid="lock-submit">Unlock</button>
+      <button type="button" class="lock-forgot" id="lockForgot" data-testid="lock-forgot" hidden>Forgot passcode?</button>
+    </form>
+  </div>
+
+  <div class="app" id="shopView" hidden>
     <div class="brand-row">
       <h1 class="app-brand" id="appBrand" data-testid="app-brand">EZ Check List</h1>
       <div class="top-actions">
@@ -787,6 +854,10 @@
       </div>
       <button type="submit" class="add-submit" id="listSave" data-testid="list-save">Create</button>
       <button type="button" class="btn-cancel" id="listDeleteBtn" data-testid="list-delete" hidden>Delete checklist</button>
+      <div id="lockActions" data-testid="lock-actions" hidden>
+        <button type="button" class="btn-cancel" id="changePasscodeBtn" data-testid="change-passcode">Change passcode</button>
+        <button type="button" class="btn-cancel" id="lockNowBtn" data-testid="lock-now">Lock now</button>
+      </div>
       <button type="button" class="btn-cancel" id="listCancel" data-testid="list-cancel">Cancel</button>
     </form>
   </div>
@@ -798,6 +869,38 @@
       <div class="modal-actions">
         <button type="button" class="btn-cancel" id="cancelDeleteList" data-testid="cancel-delete-list">Cancel</button>
         <button type="button" class="btn-confirm" id="confirmDeleteList" data-testid="confirm-delete-list">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="changePassModal" hidden>
+    <form class="sheet" id="changePassForm" role="dialog" aria-modal="true" aria-labelledby="changePassTitle" autocomplete="off">
+      <h2 id="changePassTitle">Change passcode</h2>
+      <div class="field">
+        <label for="changeCurrent">Current passcode</label>
+        <input type="password" id="changeCurrent" data-testid="change-current" maxlength="64" required autocomplete="off" spellcheck="false">
+      </div>
+      <div class="field">
+        <label for="changeNew">New passcode</label>
+        <input type="password" id="changeNew" data-testid="change-new" minlength="4" maxlength="64" required autocomplete="off" spellcheck="false">
+      </div>
+      <div class="field">
+        <label for="changeConfirm">Confirm new passcode</label>
+        <input type="password" id="changeConfirm" data-testid="change-confirm" minlength="4" maxlength="64" required autocomplete="off" spellcheck="false">
+      </div>
+      <p class="lock-error" id="changeError" data-testid="change-error" hidden></p>
+      <button type="submit" class="add-submit" id="changeSave" data-testid="change-save">Save</button>
+      <button type="button" class="btn-cancel" id="changeCancel" data-testid="change-cancel">Cancel</button>
+    </form>
+  </div>
+
+  <div class="modal-backdrop" id="forgotModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="forgotTitle">
+      <h2 id="forgotTitle">Reset passcode?</h2>
+      <p id="forgotMsg">This removes the passcode and erases all checklists, checks, prices, and history saved on this device. The shared catalog can load again, but your personal data on this phone will be gone.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" id="cancelForgot" data-testid="cancel-forgot">Cancel</button>
+        <button type="button" class="btn-danger" id="confirmForgot" data-testid="confirm-forgot">Erase and reset</button>
       </div>
     </div>
   </div>
@@ -1607,7 +1710,11 @@
           "editUnit", "editRegular", "editPar", "editSave", "editCancel",
           "priceSheet", "priceValue", "priceUnit", "priceSave", "priceSkip",
           "listModal", "listForm", "listModalTitle", "listNameInput", "listSave", "listDeleteBtn", "listCancel",
-          "deleteListModal", "deleteListTitle", "deleteListMsg", "cancelDeleteList", "confirmDeleteList"
+          "deleteListModal", "deleteListTitle", "deleteListMsg", "cancelDeleteList", "confirmDeleteList",
+          "lockView", "lockForm", "lockTitle", "lockHint", "lockPassLabel", "lockPasscode", "lockConfirm", "lockConfirmWrap",
+          "lockError", "lockSubmit", "lockForgot", "lockActions", "changePasscodeBtn", "lockNowBtn",
+          "changePassModal", "changePassForm", "changeCurrent", "changeNew", "changeConfirm",
+          "changeError", "changeSave", "changeCancel", "forgotModal", "cancelForgot", "confirmForgot"
         ].forEach(function (id) { els[id] = document.getElementById(id); });
       }
 
@@ -1664,6 +1771,7 @@
       }
 
       function render() {
+        if (!unlocked) return;
         var ls = active();
         renderSwitcher();
         els.listTitle.textContent = listName();
@@ -2069,6 +2177,7 @@
         els.listSave.textContent = listModalMode === "create" ? "Create" : "Save";
         els.listNameInput.value = listModalMode === "create" ? "" : listName();
         if (els.listDeleteBtn) els.listDeleteBtn.hidden = listModalMode === "create";
+        if (els.lockActions) els.lockActions.hidden = listModalMode === "create";
         els.listModal.hidden = false;
         els.listNameInput.focus();
         els.listNameInput.select();
@@ -2230,6 +2339,8 @@
           if (!els.resetModal.hidden) closeModal();
           else if (!els.deleteListModal.hidden) closeDeleteListModal();
           else if (!els.listModal.hidden) closeListModal();
+          else if (els.forgotModal && !els.forgotModal.hidden) closeForgotModal();
+          else if (els.changePassModal && !els.changePassModal.hidden) closeChangePassModal();
           else if (!els.editSheet.hidden) closeEditSheet();
           else if (!els.priceSheet.hidden) els.priceSkip.click();
           else closeListMenu();
@@ -2254,15 +2365,415 @@
         });
       }
 
-      function init() {
-        bindEls();
-        state = loadState();
+
+      /* ---------- Passcode lock ---------- */
+      var LOCK_KEY = "ez-checklist-lock-v1";
+      var LOCK_ITERS = 150000;
+      var IDLE_LIMIT_MS = 15 * 60 * 1000;
+      var unlocked = false;
+      var lockMode = "unlock";
+      var idleTimer = null;
+      var hiddenAt = 0;
+      var throttleTimer = null;
+
+      function bufToB64(buf) {
+        var bytes = new Uint8Array(buf);
+        var s = "";
+        for (var i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+        return btoa(s);
+      }
+
+      function b64ToBuf(b64) {
+        var s = atob(b64);
+        var bytes = new Uint8Array(s.length);
+        for (var i = 0; i < s.length; i++) bytes[i] = s.charCodeAt(i);
+        return bytes.buffer;
+      }
+
+      function loadLockRecord() {
+        try {
+          var raw = localStorage.getItem(LOCK_KEY);
+          if (!raw) return null;
+          var rec = JSON.parse(raw);
+          if (!rec || typeof rec.hash !== "string" || typeof rec.salt !== "string") return null;
+          return rec;
+        } catch (err) {
+          return null;
+        }
+      }
+
+      function saveLockRecord(rec) {
+        localStorage.setItem(LOCK_KEY, JSON.stringify(rec));
+      }
+
+      function clearDeviceData() {
+        try { localStorage.removeItem(STORAGE_KEY); } catch (err) {}
+        try { localStorage.removeItem(SERVER_CACHE_KEY); } catch (err) {}
+        try { localStorage.removeItem(LOCK_KEY); } catch (err) {}
+        LEGACY_KEYS.forEach(function (k) {
+          try { localStorage.removeItem(k); } catch (err) {}
+        });
+        state = null;
+        undoStack = null;
+        lastSyncOk = false;
+        if (els.sections) els.sections.textContent = "";
+        if (els.historyList) els.historyList.textContent = "";
+      }
+
+      async function deriveBits(pass, saltBuf, iters) {
+        var key = await crypto.subtle.importKey("raw", new TextEncoder().encode(pass), "PBKDF2", false, ["deriveBits"]);
+        return crypto.subtle.deriveBits(
+          { name: "PBKDF2", hash: "SHA-256", salt: saltBuf, iterations: iters },
+          key,
+          256
+        );
+      }
+
+      async function makeLockRecord(pass) {
+        var salt = crypto.getRandomValues(new Uint8Array(16));
+        var bits = await deriveBits(pass, salt.buffer, LOCK_ITERS);
+        return {
+          v: 1,
+          salt: bufToB64(salt.buffer),
+          hash: bufToB64(bits),
+          iters: LOCK_ITERS,
+          failed: 0,
+          lockUntil: 0
+        };
+      }
+
+      async function recordMatches(pass, rec) {
+        var bits = await deriveBits(pass, b64ToBuf(rec.salt), rec.iters || LOCK_ITERS);
+        var a = new Uint8Array(bits);
+        var b = new Uint8Array(b64ToBuf(rec.hash));
+        if (a.length !== b.length) return false;
+        var diff = 0;
+        for (var i = 0; i < a.length; i++) diff |= a[i] ^ b[i];
+        return diff === 0;
+      }
+
+      function throttleMs(failed) {
+        if (failed < 5) return 0;
+        return 30000 * Math.pow(2, failed - 5);
+      }
+
+      function remainingLockMs(rec) {
+        rec = rec || loadLockRecord();
+        if (!rec || !rec.lockUntil) return 0;
+        return Math.max(0, rec.lockUntil - Date.now());
+      }
+
+      function setLockError(msg) {
+        if (!els.lockError) return;
+        if (!msg) {
+          els.lockError.hidden = true;
+          els.lockError.textContent = "";
+          return;
+        }
+        els.lockError.hidden = false;
+        els.lockError.textContent = msg;
+      }
+
+      function formatWait(ms) {
+        var s = Math.max(1, Math.ceil(ms / 1000));
+        return s + (s === 1 ? " second" : " seconds");
+      }
+
+      function updateThrottleUi() {
+        var rec = loadLockRecord();
+        var left = remainingLockMs(rec);
+        if (throttleTimer) {
+          clearInterval(throttleTimer);
+          throttleTimer = null;
+        }
+        if (left <= 0) {
+          if (els.lockSubmit) els.lockSubmit.disabled = false;
+          return left;
+        }
+        if (els.lockSubmit) els.lockSubmit.disabled = true;
+        setLockError("Too many attempts. Try again in " + formatWait(left) + ".");
+        throttleTimer = setInterval(function () {
+          var remain = remainingLockMs();
+          if (remain <= 0) {
+            clearInterval(throttleTimer);
+            throttleTimer = null;
+            if (els.lockSubmit) els.lockSubmit.disabled = false;
+            setLockError("");
+            return;
+          }
+          setLockError("Too many attempts. Try again in " + formatWait(remain) + ".");
+        }, 500);
+        return left;
+      }
+
+      function registerWrongAttempt() {
+        var rec = loadLockRecord();
+        if (!rec) return 0;
+        rec.failed = (rec.failed || 0) + 1;
+        var wait = throttleMs(rec.failed);
+        rec.lockUntil = wait ? Date.now() + wait : 0;
+        saveLockRecord(rec);
+        return wait;
+      }
+
+      function clearFailedAttempts(rec) {
+        rec.failed = 0;
+        rec.lockUntil = 0;
+        saveLockRecord(rec);
+      }
+
+      function hideAppShell() {
+        if (els.shopView) els.shopView.hidden = true;
+        if (els.historyView) els.historyView.hidden = true;
+        if (els.sections) els.sections.textContent = "";
+        if (els.historyList) els.historyList.textContent = "";
+        if (els.resetModal) els.resetModal.hidden = true;
+        if (els.editSheet) els.editSheet.hidden = true;
+        if (els.priceSheet) els.priceSheet.hidden = true;
+        if (els.listModal) els.listModal.hidden = true;
+        if (els.deleteListModal) els.deleteListModal.hidden = true;
+        if (els.changePassModal) els.changePassModal.hidden = true;
+        if (els.forgotModal) els.forgotModal.hidden = true;
+        hideToast();
+        closeListMenu();
+      }
+
+      function clearLockInputs() {
+        if (els.lockPasscode) els.lockPasscode.value = "";
+        if (els.lockConfirm) els.lockConfirm.value = "";
+        if (els.changeCurrent) els.changeCurrent.value = "";
+        if (els.changeNew) els.changeNew.value = "";
+        if (els.changeConfirm) els.changeConfirm.value = "";
+      }
+
+      function showLockScreen(mode) {
+        lockMode = mode || (loadLockRecord() ? "unlock" : "create");
+        unlocked = false;
+        hideAppShell();
+        view = "shop";
+        if (els.lockView) els.lockView.hidden = false;
+        var creating = lockMode === "create";
+        els.lockTitle.textContent = creating ? "Create a passcode" : "Enter passcode";
+        els.lockHint.textContent = creating
+          ? "Choose at least 4 characters. You'll need this passcode to open the app on this phone."
+          : "Enter the passcode for this phone.";
+        els.lockPassLabel.textContent = "Passcode";
+        els.lockConfirmWrap.hidden = !creating;
+        els.lockForgot.hidden = creating;
+        els.lockSubmit.textContent = creating ? "Create passcode" : "Unlock";
+        els.lockSubmit.disabled = false;
+        setLockError("");
+        clearLockInputs();
+        updateThrottleUi();
+        if (els.lockPasscode) els.lockPasscode.focus();
+      }
+
+      function bumpActivity() {
+        if (!unlocked) return;
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(function () {
+          if (unlocked) lockNow();
+        }, IDLE_LIMIT_MS);
+      }
+
+      function bindLockWatch() {
+        document.addEventListener("visibilitychange", function () {
+          if (!unlocked) return;
+          if (document.hidden) {
+            hiddenAt = Date.now();
+          } else {
+            var away = hiddenAt ? Date.now() - hiddenAt : 0;
+            hiddenAt = 0;
+            if (away >= IDLE_LIMIT_MS) lockNow();
+            else bumpActivity();
+          }
+        });
+        ["pointerdown", "keydown", "touchstart", "click"].forEach(function (ev) {
+          document.addEventListener(ev, bumpActivity, true);
+        });
+      }
+
+      function lockNow() {
+        if (!unlocked && els.lockView && !els.lockView.hidden) return;
+        unlocked = false;
+        state = null;
+        undoStack = null;
+        clearTimeout(idleTimer);
+        idleTimer = null;
+        hiddenAt = 0;
+        showLockScreen("unlock");
+      }
+
+      function unlockApp() {
+        unlocked = true;
+        if (els.lockView) els.lockView.hidden = true;
+        clearLockInputs();
+        setLockError("");
+        if (els.lockSubmit) els.lockSubmit.disabled = false;
+        if (!state) state = loadState();
         populateSectionSelects();
-        bindEvents();
-        registerSW();
         render();
         setSyncStatus("pending", "Updating list…");
         syncFromServer();
+        bumpActivity();
+      }
+
+      async function onLockSubmit(e) {
+        e.preventDefault();
+        var pass = (els.lockPasscode.value || "");
+        var confirm = (els.lockConfirm.value || "");
+        if (updateThrottleUi() > 0) return;
+        if (pass.length < 4) {
+          setLockError("Use at least 4 characters.");
+          return;
+        }
+        if (lockMode === "create") {
+          if (pass !== confirm) {
+            setLockError("Those passcodes don't match.");
+            return;
+          }
+          if (!crypto.subtle) {
+            setLockError("This browser can't store a passcode securely.");
+            return;
+          }
+          els.lockSubmit.disabled = true;
+          try {
+            var rec = await makeLockRecord(pass);
+            saveLockRecord(rec);
+            clearLockInputs();
+            unlockApp();
+          } catch (err) {
+            setLockError("Couldn't save the passcode. Try again.");
+            els.lockSubmit.disabled = false;
+          }
+          return;
+        }
+        var stored = loadLockRecord();
+        if (!stored) {
+          showLockScreen("create");
+          return;
+        }
+        els.lockSubmit.disabled = true;
+        try {
+          var ok = await recordMatches(pass, stored);
+          clearLockInputs();
+          if (ok) {
+            clearFailedAttempts(stored);
+            unlockApp();
+          } else {
+            var wait = registerWrongAttempt();
+            if (wait) updateThrottleUi();
+            else {
+              setLockError("Wrong passcode.");
+              els.lockSubmit.disabled = false;
+            }
+          }
+        } catch (err) {
+          setLockError("Couldn't check the passcode. Try again.");
+          els.lockSubmit.disabled = false;
+        }
+      }
+
+      function openChangePassModal() {
+        hideToast();
+        closeListModal();
+        if (els.changeError) {
+          els.changeError.hidden = true;
+          els.changeError.textContent = "";
+        }
+        clearLockInputs();
+        els.changePassModal.hidden = false;
+        els.changeCurrent.focus();
+      }
+
+      function closeChangePassModal() {
+        if (els.changePassModal) els.changePassModal.hidden = true;
+        clearLockInputs();
+      }
+
+      async function onChangePassSubmit(e) {
+        e.preventDefault();
+        var current = els.changeCurrent.value || "";
+        var next = els.changeNew.value || "";
+        var confirm = els.changeConfirm.value || "";
+        function err(msg) {
+          els.changeError.hidden = false;
+          els.changeError.textContent = msg;
+        }
+        if (updateThrottleUi() > 0) {
+          err("Too many attempts. Unlock again later, then retry.");
+          return;
+        }
+        if (next.length < 4) { err("Use at least 4 characters."); return; }
+        if (next !== confirm) { err("Those passcodes don't match."); return; }
+        var stored = loadLockRecord();
+        if (!stored) { err("No passcode is set."); return; }
+        els.changeSave.disabled = true;
+        try {
+          var ok = await recordMatches(current, stored);
+          if (!ok) {
+            var wait = registerWrongAttempt();
+            err(wait ? "Wrong passcode. Try again in " + formatWait(wait) + "." : "Wrong passcode.");
+            els.changeCurrent.value = "";
+            els.changeSave.disabled = false;
+            return;
+          }
+          var rec = await makeLockRecord(next);
+          saveLockRecord(rec);
+          clearLockInputs();
+          closeChangePassModal();
+          showToast("Passcode changed");
+        } catch (ex) {
+          err("Couldn't change the passcode. Try again.");
+        }
+        els.changeSave.disabled = false;
+      }
+
+      function openForgotModal() {
+        hideToast();
+        els.forgotModal.hidden = false;
+      }
+
+      function closeForgotModal() {
+        if (els.forgotModal) els.forgotModal.hidden = true;
+      }
+
+      function confirmForgotPasscode() {
+        closeForgotModal();
+        clearDeviceData();
+        showLockScreen("create");
+        setLockError("");
+      }
+
+      function bindLockEvents() {
+        els.lockForm.addEventListener("submit", function (e) { onLockSubmit(e); });
+        els.lockForgot.addEventListener("click", openForgotModal);
+        els.cancelForgot.addEventListener("click", closeForgotModal);
+        els.confirmForgot.addEventListener("click", confirmForgotPasscode);
+        els.forgotModal.addEventListener("click", function (e) {
+          if (e.target === els.forgotModal) closeForgotModal();
+        });
+        els.changePasscodeBtn.addEventListener("click", openChangePassModal);
+        els.lockNowBtn.addEventListener("click", function () {
+          closeListModal();
+          lockNow();
+        });
+        els.changePassForm.addEventListener("submit", function (e) { onChangePassSubmit(e); });
+        els.changeCancel.addEventListener("click", closeChangePassModal);
+        els.changePassModal.addEventListener("click", function (e) {
+          if (e.target === els.changePassModal) closeChangePassModal();
+        });
+      }
+
+
+      function init() {
+        bindEls();
+        bindEvents();
+        bindLockEvents();
+        bindLockWatch();
+        registerSW();
+        var rec = loadLockRecord();
+        showLockScreen(rec && rec.hash ? "unlock" : "create");
       }
 
       // Expose a few helpers for tests
@@ -2275,7 +2786,14 @@
         renameList: renameList,
         deleteList: deleteListById,
         currentTripCsv: currentTripCsv,
-        undo: undo
+        undo: undo,
+        lockNow: lockNow,
+        setIdleMs: function (ms) { IDLE_LIMIT_MS = ms; },
+        simulateAway: function (ms) {
+          hiddenAt = Date.now() - ms;
+          if (ms >= IDLE_LIMIT_MS) lockNow();
+        },
+        hasLock: function () { return !!loadLockRecord(); }
       };
 
       if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
