@@ -1,167 +1,172 @@
 {
-  "version": 1,
-  "updatedAt": "2026-11-25T05:05:59Z",
-  "sections": [
-    "Fresh Produce & Fruit",
-    "Meat & Deli",
-    "Pantry",
-    "Paper & To-Go Supplies",
-    "Cleaning"
-  ],
-  "items": [
-    {
-      "id": "srv-blueberries",
-      "name": "Blueberries",
-      "section": "Fresh Produce & Fruit",
-      "qty": "",
-      "rev": 1
+  "version": 2,
+  "updatedAt": "2026-11-25T05:20:50Z",
+  "lists": {
+    "vabbe": {
+      "id": "vabbe",
+      "name": "Vabbe Checklist",
+      "items": [
+        {
+          "id": "srv-napkins",
+          "name": "Napkins",
+          "section": "Paper & Disposables / To-Go",
+          "qty": "2 cs",
+          "rev": 1
+        },
+        {
+          "id": "srv-small-to-go-bags",
+          "name": "Small to-go bags",
+          "section": "Paper & Disposables / To-Go",
+          "qty": "1 cs",
+          "rev": 1
+        },
+        {
+          "id": "srv-large-to-go-bags",
+          "name": "Large to-go bags",
+          "section": "Paper & Disposables / To-Go",
+          "qty": "1 cs",
+          "rev": 1
+        },
+        {
+          "id": "srv-plastic-food-wrap",
+          "name": "Plastic food wrap",
+          "section": "Paper & Disposables / To-Go",
+          "qty": "",
+          "rev": 1
+        },
+        {
+          "id": "srv-9x9",
+          "name": "9x9",
+          "section": "Paper & Disposables / To-Go",
+          "qty": "",
+          "rev": 1
+        },
+        {
+          "id": "srv-degreaser",
+          "name": "Degreaser",
+          "section": "Janitorial & Cleaning",
+          "qty": "",
+          "rev": 1
+        },
+        {
+          "id": "srv-air-freshener",
+          "name": "Air freshener",
+          "section": "Janitorial & Cleaning",
+          "qty": "",
+          "rev": 1
+        },
+        {
+          "id": "srv-almond-butter",
+          "name": "Almond butter",
+          "section": "Pantry & Dry Goods",
+          "qty": "",
+          "rev": 1
+        },
+        {
+          "id": "srv-clear-frying-oil",
+          "name": "Clear frying oil",
+          "section": "Pantry & Dry Goods",
+          "qty": "",
+          "rev": 1
+        },
+        {
+          "id": "srv-biscoff",
+          "name": "Biscoff",
+          "section": "Snacks & Candy",
+          "qty": "",
+          "rev": 1
+        },
+        {
+          "id": "srv-pineapple-juice",
+          "name": "Pineapple juice",
+          "section": "Beverages",
+          "qty": "",
+          "rev": 1
+        },
+        {
+          "id": "srv-lemon-juice",
+          "name": "Lemon juice",
+          "section": "Beverages",
+          "qty": "For FHH",
+          "rev": 1
+        },
+        {
+          "id": "srv-blueberries",
+          "name": "Blueberries",
+          "section": "Produce",
+          "qty": "",
+          "rev": 1
+        },
+        {
+          "id": "srv-strawberries",
+          "name": "Strawberries",
+          "section": "Produce",
+          "qty": "",
+          "rev": 1
+        },
+        {
+          "id": "srv-bacon",
+          "name": "Bacon",
+          "section": "Meat & Poultry",
+          "qty": "",
+          "rev": 1
+        },
+        {
+          "id": "srv-turkey",
+          "name": "Turkey",
+          "section": "Meat & Poultry",
+          "qty": "",
+          "rev": 1
+        },
+        {
+          "id": "srv-pastrami",
+          "name": "Pastrami",
+          "section": "Deli & Cheese",
+          "qty": "",
+          "rev": 1
+        },
+        {
+          "id": "srv-pepper-jack-cheese",
+          "name": "Pepper jack cheese",
+          "section": "Deli & Cheese",
+          "qty": "",
+          "rev": 1
+        },
+        {
+          "id": "srv-american-cheese",
+          "name": "American cheese",
+          "section": "Deli & Cheese",
+          "qty": "",
+          "rev": 1
+        }
+      ],
+      "idRevs": {
+        "srv-napkins": 1,
+        "srv-small-to-go-bags": 1,
+        "srv-large-to-go-bags": 1,
+        "srv-plastic-food-wrap": 1,
+        "srv-9x9": 1,
+        "srv-degreaser": 1,
+        "srv-air-freshener": 1,
+        "srv-biscoff": 1,
+        "srv-almond-butter": 1,
+        "srv-clear-frying-oil": 1,
+        "srv-pineapple-juice": 1,
+        "srv-lemon-juice": 1,
+        "srv-blueberries": 1,
+        "srv-strawberries": 1,
+        "srv-bacon": 1,
+        "srv-pastrami": 1,
+        "srv-turkey": 1,
+        "srv-pepper-jack-cheese": 1,
+        "srv-american-cheese": 1
+      }
     },
-    {
-      "id": "srv-strawberries",
-      "name": "Strawberries",
-      "section": "Fresh Produce & Fruit",
-      "qty": "",
-      "rev": 1
-    },
-    {
-      "id": "srv-bacon",
-      "name": "Bacon",
-      "section": "Meat & Deli",
-      "qty": "",
-      "rev": 1
-    },
-    {
-      "id": "srv-pastrami",
-      "name": "Pastrami",
-      "section": "Meat & Deli",
-      "qty": "",
-      "rev": 1
-    },
-    {
-      "id": "srv-turkey",
-      "name": "Turkey",
-      "section": "Meat & Deli",
-      "qty": "",
-      "rev": 1
-    },
-    {
-      "id": "srv-pepper-jack-cheese",
-      "name": "Pepper jack cheese",
-      "section": "Meat & Deli",
-      "qty": "",
-      "rev": 1
-    },
-    {
-      "id": "srv-american-cheese",
-      "name": "American cheese",
-      "section": "Meat & Deli",
-      "qty": "",
-      "rev": 1
-    },
-    {
-      "id": "srv-biscoff",
-      "name": "Biscoff",
-      "section": "Pantry",
-      "qty": "",
-      "rev": 1
-    },
-    {
-      "id": "srv-almond-butter",
-      "name": "Almond butter",
-      "section": "Pantry",
-      "qty": "",
-      "rev": 1
-    },
-    {
-      "id": "srv-pineapple-juice",
-      "name": "Pineapple juice",
-      "section": "Pantry",
-      "qty": "",
-      "rev": 1
-    },
-    {
-      "id": "srv-lemon-juice",
-      "name": "Lemon juice",
-      "section": "Pantry",
-      "qty": "For FHH",
-      "rev": 1
-    },
-    {
-      "id": "srv-clear-frying-oil",
-      "name": "Clear frying oil",
-      "section": "Pantry",
-      "qty": "",
-      "rev": 1
-    },
-    {
-      "id": "srv-napkins",
-      "name": "Napkins",
-      "section": "Paper & To-Go Supplies",
-      "qty": "2 cs",
-      "rev": 1
-    },
-    {
-      "id": "srv-small-to-go-bags",
-      "name": "Small to-go bags",
-      "section": "Paper & To-Go Supplies",
-      "qty": "1 cs",
-      "rev": 1
-    },
-    {
-      "id": "srv-large-to-go-bags",
-      "name": "Large to-go bags",
-      "section": "Paper & To-Go Supplies",
-      "qty": "1 cs",
-      "rev": 1
-    },
-    {
-      "id": "srv-plastic-food-wrap",
-      "name": "Plastic food wrap",
-      "section": "Paper & To-Go Supplies",
-      "qty": "",
-      "rev": 1
-    },
-    {
-      "id": "srv-9x9",
-      "name": "9x9",
-      "section": "Paper & To-Go Supplies",
-      "qty": "",
-      "rev": 1
-    },
-    {
-      "id": "srv-degreaser",
-      "name": "Degreaser",
-      "section": "Cleaning",
-      "qty": "",
-      "rev": 1
-    },
-    {
-      "id": "srv-air-freshener",
-      "name": "Air freshener",
-      "section": "Cleaning",
-      "qty": "",
-      "rev": 1
+    "campbell": {
+      "id": "campbell",
+      "name": "Campbell Checklist",
+      "items": [],
+      "idRevs": {}
     }
-  ],
-  "idRevs": {
-    "srv-blueberries": 1,
-    "srv-strawberries": 1,
-    "srv-bacon": 1,
-    "srv-pastrami": 1,
-    "srv-turkey": 1,
-    "srv-pepper-jack-cheese": 1,
-    "srv-american-cheese": 1,
-    "srv-biscoff": 1,
-    "srv-almond-butter": 1,
-    "srv-pineapple-juice": 1,
-    "srv-lemon-juice": 1,
-    "srv-clear-frying-oil": 1,
-    "srv-napkins": 1,
-    "srv-small-to-go-bags": 1,
-    "srv-large-to-go-bags": 1,
-    "srv-plastic-food-wrap": 1,
-    "srv-9x9": 1,
-    "srv-degreaser": 1,
-    "srv-air-freshener": 1
   }
 }
