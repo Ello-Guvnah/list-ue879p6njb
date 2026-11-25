@@ -1,5 +1,5 @@
 /* Costco checklist service worker: app shell cache + network-first list.json */
-const CACHE = "costco-checklist-v3";
+const CACHE = "costco-checklist-v4";
 const SHELL = [
   "./",
   "./index.html",

@@ -584,7 +584,7 @@
   <div class="modal-backdrop" id="resetModal" hidden>
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="resetTitle">
       <h2 id="resetTitle">Start a new trip?</h2>
-      <p>Checks will be cleared. Unbought items will be tagged as carryover. Bought items stay on the list as regular items.</p>
+      <p>Bought items will be removed from this trip. Unbought items stay on the list and are tagged as carryover.</p>
       <div class="modal-actions">
         <button type="button" class="btn-cancel" id="cancelReset" data-testid="cancel-reset">Cancel</button>
         <button type="button" class="btn-confirm" id="confirmReset" data-testid="confirm-reset">Reset</button>
@@ -672,12 +672,14 @@
           tripDate: todayISO(),
           hidePurchased: false,
           dismissedServerIds: [],
+          dismissals: [],
           lastServerList: null,
           items: []
         };
       }
 
       function coerceItem(item, fallbackSource) {
+        var rev = Number(item.rev);
         return {
           id: String(item.id),
           name: item.name,
@@ -685,8 +687,71 @@
           qty: typeof item.qty === "string" ? item.qty : "",
           purchased: !!item.purchased,
           carryover: !!item.carryover,
-          source: item.source === "server" || item.source === "local" ? item.source : (fallbackSource || "local")
+          source: item.source === "server" || item.source === "local" ? item.source : (fallbackSource || "local"),
+          rev: isFinite(rev) ? rev : 0
         };
+      }
+
+      function serverRev(sItem) {
+        if (!sItem) return 0;
+        var n = Number(sItem.rev);
+        return isFinite(n) ? n : 0;
+      }
+
+      function getDismissal(id) {
+        var list = state.dismissals || [];
+        for (var i = 0; i < list.length; i++) {
+          if (list[i] && list[i].id === id) return list[i];
+        }
+        return null;
+      }
+
+      function upsertDismissal(id, rev) {
+        if (!state.dismissals) state.dismissals = [];
+        var r = typeof rev === "number" && isFinite(rev) ? rev : 0;
+        var existing = getDismissal(id);
+        if (existing) {
+          existing.rev = Math.max(existing.rev || 0, r);
+        } else {
+          state.dismissals.push({ id: id, rev: r });
+        }
+      }
+
+      function clearDismissal(id) {
+        state.dismissals = (state.dismissals || []).filter(function (d) { return d.id !== id; });
+      }
+
+      function isDismissedOnServer(sItem) {
+        var d = getDismissal(sItem.id);
+        if (!d) return false;
+        // Reappears only when the server rev is newer than the dismissal.
+        return serverRev(sItem) <= (d.rev || 0);
+      }
+
+      function migrateDismissals(parsed) {
+        var list = Array.isArray(parsed.dismissals) ? parsed.dismissals.slice() : [];
+        var have = {};
+        list = list.filter(function (d) {
+          if (!d || typeof d.id !== "string") return false;
+          have[d.id] = true;
+          d.rev = isFinite(Number(d.rev)) ? Number(d.rev) : 0;
+          return true;
+        });
+        // Legacy string ids stay dismissed until that item's current (or default 1) rev is bumped.
+        (parsed.dismissedServerIds || []).forEach(function (id) {
+          if (typeof id !== "string" || have[id]) return;
+          var current = 1;
+          var catalog = parsed.lastServerList && parsed.lastServerList.items;
+          if (Array.isArray(catalog)) {
+            catalog.forEach(function (it) {
+              if (it && it.id === id) current = Math.max(current, serverRev(it));
+            });
+          }
+          list.push({ id: id, rev: current });
+          have[id] = true;
+        });
+        parsed.dismissals = list;
+        return parsed;
       }
 
       function migrateLegacy(parsed) {
@@ -709,6 +774,7 @@
             if (parsed && parsed.version === 2 && Array.isArray(parsed.items)) {
               parsed.hidePurchased = !!parsed.hidePurchased;
               parsed.dismissedServerIds = Array.isArray(parsed.dismissedServerIds) ? parsed.dismissedServerIds : [];
+              migrateDismissals(parsed);
               parsed.items = parsed.items.filter(function (item) {
                 return item && typeof item.id === "string" && typeof item.name === "string";
               }).map(function (item) { return coerceItem(item, "local"); });
@@ -770,9 +836,6 @@
       }
 
       function mergeServerList(server) {
-        var dismissed = {};
-        (state.dismissedServerIds || []).forEach(function (id) { dismissed[id] = true; });
-
         var byId = {};
         var byKey = {};
         var used = {};
@@ -786,7 +849,8 @@
         var merged = [];
         (server.items || []).forEach(function (sItem) {
           serverIds[sItem.id] = true;
-          if (dismissed[sItem.id]) return;
+          if (isDismissedOnServer(sItem)) return;
+          if (getDismissal(sItem.id)) clearDismissal(sItem.id);
 
           var local = byId[sItem.id];
           if (!local) {
@@ -803,6 +867,7 @@
             local.section = sItem.section || local.section;
             local.qty = typeof sItem.qty === "string" ? sItem.qty : (sItem.qty || "");
             local.source = "server";
+            local.rev = serverRev(sItem);
             merged.push(local);
           } else {
             merged.push({
@@ -812,7 +877,8 @@
               qty: typeof sItem.qty === "string" ? sItem.qty : "",
               purchased: false,
               carryover: false,
-              source: "server"
+              source: "server",
+              rev: serverRev(sItem)
             });
           }
         });
@@ -870,9 +936,7 @@
       function deleteItem(id) {
         var item = findItem(id);
         if (!item) return;
-        if (item.source === "server") {
-          if (state.dismissedServerIds.indexOf(id) === -1) state.dismissedServerIds.push(id);
-        }
+        if (item.source === "server") upsertDismissal(id, serverRev(item));
         state.items = state.items.filter(function (row) { return row.id !== id; });
         saveState();
         render();
@@ -893,10 +957,17 @@
       }
 
       function resetTrip() {
+        var kept = [];
         state.items.forEach(function (item) {
-          item.carryover = !item.purchased;
+          if (item.purchased) {
+            if (item.source === "server") upsertDismissal(item.id, serverRev(item));
+            return;
+          }
           item.purchased = false;
+          item.carryover = true;
+          kept.push(item);
         });
+        state.items = kept;
         state.tripDate = todayISO();
         saveState();
         closeModal();
@@ -1102,8 +1173,21 @@
       });
 
       if ("serviceWorker" in navigator) {
+        var hadController = !!navigator.serviceWorker.controller;
+        var reloading = false;
+        navigator.serviceWorker.addEventListener("controllerchange", function () {
+          if (!hadController) {
+            hadController = true;
+            return;
+          }
+          if (reloading) return;
+          reloading = true;
+          window.location.reload();
+        });
         var swUrl = new URL("sw.js", window.location.href);
-        navigator.serviceWorker.register(swUrl.href, { scope: "./" }).catch(function (err) {
+        navigator.serviceWorker.register(swUrl.href, { scope: "./" }).then(function (reg) {
+          if (reg && reg.update) reg.update();
+        }).catch(function (err) {
           console.warn("Service worker registration failed", err);
         });
       }
