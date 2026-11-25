@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updatedAt": "2026-11-25T07:02:12Z",
+  "updatedAt": "2026-11-25T20:10:50Z",
   "lists": {
     "vabbe": {
       "id": "vabbe",
@@ -265,8 +265,126 @@
     "campbell": {
       "id": "campbell",
       "name": "Campbell Checklist",
-      "items": [],
-      "idRevs": {}
+      "items": [
+        {
+          "id": "srv-broom",
+          "name": "Broom",
+          "section": "Janitorial & Cleaning",
+          "qty": "",
+          "rev": 1
+        },
+        {
+          "id": "srv-toilet-paper",
+          "name": "Toilet paper",
+          "section": "Janitorial & Cleaning",
+          "qty": "",
+          "rev": 1
+        },
+        {
+          "id": "srv-pickled-carrots-daikons",
+          "name": "Pickled carrots & daikons",
+          "section": "Pantry & Dry Goods",
+          "qty": "",
+          "rev": 1,
+          "sectionOverride": true
+        },
+        {
+          "id": "srv-salt",
+          "name": "Salt",
+          "section": "Pantry & Dry Goods",
+          "qty": "",
+          "rev": 1
+        },
+        {
+          "id": "srv-vegetable-oil",
+          "name": "Vegetable oil",
+          "section": "Pantry & Dry Goods",
+          "qty": "",
+          "rev": 1
+        },
+        {
+          "id": "srv-plum-for-sauce",
+          "name": "Plum for sauce",
+          "section": "Pantry & Dry Goods",
+          "qty": "",
+          "rev": 1
+        },
+        {
+          "id": "srv-corn",
+          "name": "Corn",
+          "section": "Pantry & Dry Goods",
+          "qty": "",
+          "rev": 1,
+          "sectionOverride": true
+        },
+        {
+          "id": "srv-lemon-juice",
+          "name": "Lemon juice",
+          "section": "Beverages",
+          "qty": "",
+          "rev": 1
+        },
+        {
+          "id": "srv-toast-bread",
+          "name": "Toast bread",
+          "section": "Bakery",
+          "qty": "",
+          "rev": 1
+        },
+        {
+          "id": "srv-gluten-free-burger-bread",
+          "name": "Gluten-free burger bread",
+          "section": "Bakery",
+          "qty": "",
+          "rev": 1
+        },
+        {
+          "id": "srv-bacon",
+          "name": "Bacon",
+          "section": "Meat & Poultry",
+          "qty": "",
+          "rev": 1
+        },
+        {
+          "id": "srv-cheese-for-sauce",
+          "name": "Cheese for sauce",
+          "section": "Deli & Cheese",
+          "qty": "",
+          "rev": 1
+        },
+        {
+          "id": "srv-coleslaw",
+          "name": "Coleslaw",
+          "section": "Refrigerated & Dairy",
+          "qty": "",
+          "rev": 1,
+          "sectionOverride": true
+        },
+        {
+          "id": "srv-fries",
+          "name": "Fries",
+          "section": "Frozen",
+          "qty": "",
+          "rev": 1,
+          "sectionOverride": true
+        }
+      ],
+      "idRevs": {
+        "srv-broom": 1,
+        "srv-pickled-carrots-daikons": 1,
+        "srv-salt": 1,
+        "srv-lemon-juice": 1,
+        "srv-coleslaw": 1,
+        "srv-toilet-paper": 1,
+        "srv-toast-bread": 1,
+        "srv-bacon": 1,
+        "srv-vegetable-oil": 1,
+        "srv-fries": 1,
+        "srv-cheese-for-sauce": 1,
+        "srv-plum-for-sauce": 1,
+        "srv-corn": 1,
+        "srv-gluten-free-burger-bread": 1
+      }
     }
   }
 }
