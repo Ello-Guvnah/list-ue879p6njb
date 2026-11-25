@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "Costco Shopping Checklist",
-  "short_name": "Costco List",
+  "name": "EZ Check List",
+  "short_name": "EZ Check List",
   "description": "Tap items off as you shop. Works offline.",
   "start_url": "./",
   "scope": "./",

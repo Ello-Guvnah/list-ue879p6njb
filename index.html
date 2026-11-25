@@ -8,12 +8,12 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Costco List">
-  <meta name="application-name" content="Costco List">
+  <meta name="apple-mobile-web-app-title" content="EZ Check List">
+  <meta name="application-name" content="EZ Check List">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
-  <title>Vabbe Checklist</title>
+  <title>EZ Check List</title>
   <script>
     (function () {
       var path = window.location.pathname;
@@ -80,11 +80,29 @@
       padding: 16px 16px calc(28px + env(safe-area-inset-bottom));
     }
 
-    .topbar {
+    .brand-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .app-brand {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      min-width: 0;
+    }
+
+    .history-brand { margin-bottom: 10px; }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
       margin-bottom: 16px;
     }
 
@@ -94,7 +112,7 @@
       min-width: 0;
     }
 
-    .list-switcher select {
+    .list-switcher-btn {
       appearance: none;
       -webkit-appearance: none;
       width: 100%;
@@ -105,9 +123,75 @@
       padding: 0 36px 0 14px;
       font-size: 15px;
       font-weight: 600;
+      text-align: left;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%239a9a9a' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
       background-repeat: no-repeat;
       background-position: right 12px center;
+      touch-action: manipulation;
+    }
+
+    .list-switcher-btn[aria-expanded="true"] {
+      border-color: var(--border-strong);
+    }
+
+    .list-menu {
+      position: absolute;
+      z-index: 25;
+      left: 0;
+      right: 0;
+      top: calc(100% + 6px);
+      background: #2a2a2a;
+      border: 1px solid var(--border-strong);
+      border-radius: 12px;
+      padding: 6px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+      max-height: 60dvh;
+      overflow: auto;
+    }
+
+    .list-menu[hidden] { display: none; }
+
+    .list-option {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 12px 12px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 550;
+      touch-action: manipulation;
+    }
+
+    .list-option.selected { background: rgba(255,255,255,0.08); }
+    .list-option:active { background: rgba(255,255,255,0.12); }
+    .list-option-new { color: #fff; font-weight: 650; }
+    .list-menu-sep {
+      height: 1px;
+      background: var(--border-strong);
+      margin: 6px 8px;
+    }
+
+    .manage-btn {
+      flex-shrink: 0;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1;
+      touch-action: manipulation;
+    }
+
+    .manage-btn:active { background: #2a2a2a; }
+
+    #listTitle {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
     }
 
     .top-actions {
@@ -538,18 +622,21 @@
 </head>
 <body>
   <div class="app" id="shopView">
-    <div class="topbar">
-      <label class="list-switcher">
-        <span class="visually-hidden" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Checklist</span>
-        <select id="listSwitcher" data-testid="list-switcher" aria-label="Switch checklist">
-          <option value="vabbe">Vabbe Checklist</option>
-          <option value="campbell">Campbell Checklist</option>
-        </select>
-      </label>
+    <div class="brand-row">
+      <h1 class="app-brand" id="appBrand" data-testid="app-brand">EZ Check List</h1>
       <div class="top-actions">
         <button type="button" id="historyBtn" data-testid="history-btn">History</button>
         <button type="button" id="exportBtn" data-testid="export-btn">Export CSV</button>
       </div>
+    </div>
+    <div class="topbar">
+      <div class="list-switcher" id="listSwitcherWrap">
+        <button type="button" class="list-switcher-btn" id="listSwitcherBtn" data-testid="list-switcher" aria-haspopup="listbox" aria-expanded="false" aria-controls="listMenu" aria-label="Switch checklist">
+          <span id="listSwitcherLabel">Vabbe Checklist</span>
+        </button>
+        <div class="list-menu" id="listMenu" hidden data-testid="list-menu" role="listbox" aria-label="Checklists"></div>
+      </div>
+      <button type="button" class="manage-btn" id="manageListBtn" data-testid="manage-list" aria-label="Rename or delete checklist" title="Rename or delete">⋯</button>
     </div>
 
     <div class="stats">
@@ -568,7 +655,7 @@
     </div>
 
     <header>
-      <h1 id="listTitle">Vabbe Checklist</h1>
+      <h2 id="listTitle">Vabbe Checklist</h2>
       <p class="subtitle" id="subtitle"></p>
       <p class="trip-total" id="tripTotal">Trip total $0.00</p>
       <p class="sync-status" id="syncStatus" data-testid="sync-status" aria-live="polite"></p>
@@ -601,32 +688,18 @@
 
     <div id="sections"></div>
 
-    <form class="add-card" id="addForm" autocomplete="off">
-      <h2>Add item</h2>
-      <div class="row-2">
-        <div class="field">
-          <label for="addName">Item</label>
-          <input type="text" id="addName" data-testid="add-name" name="name" placeholder="Item name" maxlength="80" required>
-        </div>
-        <div class="field">
-          <label for="addQty">Qty / note</label>
-          <input type="text" id="addQty" data-testid="add-qty" name="qty" placeholder="Optional" maxlength="40">
-        </div>
-      </div>
-      <button type="submit" class="add-submit" data-testid="add-submit">Add item</button>
-    </form>
-
     <form class="quick-card" id="quickAddForm" autocomplete="off">
       <h2>Quick add</h2>
       <div class="field">
-        <label for="quickAdd">One item per line. Qty like "2 cs" or "x2" is fine.</label>
+        <label for="quickAdd">One item per line, or just a name. Qty like "2 cs" or "x2" is fine.</label>
         <textarea id="quickAdd" data-testid="quick-add" placeholder="Napkins 2 cs&#10;Ketchup x2&#10;Heavy cream"></textarea>
       </div>
-      <button type="submit" class="add-submit" data-testid="quick-add-submit">Add lines</button>
+      <button type="submit" class="add-submit" data-testid="quick-add-submit">Add items</button>
     </form>
   </div>
 
   <div class="history-app" id="historyView" hidden>
+    <p class="app-brand history-brand">EZ Check List</p>
     <button type="button" class="text-btn back-btn" id="historyBack" data-testid="history-back">Back to list</button>
     <h1>Trip history</h1>
     <p class="subtitle" id="historySubtitle">Past resets on this checklist</p>
@@ -702,6 +775,30 @@
       </div>
       <button type="button" class="add-submit" id="priceSave" data-testid="price-save">Save price</button>
       <button type="button" class="btn-cancel" id="priceSkip" data-testid="price-skip">Skip</button>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="listModal" hidden>
+    <form class="sheet" id="listForm" role="dialog" aria-modal="true" aria-labelledby="listModalTitle">
+      <h2 id="listModalTitle">New checklist</h2>
+      <div class="field">
+        <label for="listNameInput">Name</label>
+        <input type="text" id="listNameInput" data-testid="list-name-input" maxlength="40" required placeholder="e.g. Warehouse" autocomplete="off">
+      </div>
+      <button type="submit" class="add-submit" id="listSave" data-testid="list-save">Create</button>
+      <button type="button" class="btn-cancel" id="listDeleteBtn" data-testid="list-delete" hidden>Delete checklist</button>
+      <button type="button" class="btn-cancel" id="listCancel" data-testid="list-cancel">Cancel</button>
+    </form>
+  </div>
+
+  <div class="modal-backdrop" id="deleteListModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="deleteListTitle">
+      <h2 id="deleteListTitle">Delete this checklist?</h2>
+      <p id="deleteListMsg">This removes all items, checks, and history for this list.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" id="cancelDeleteList" data-testid="cancel-delete-list">Cancel</button>
+        <button type="button" class="btn-confirm" id="confirmDeleteList" data-testid="confirm-delete-list">Delete</button>
+      </div>
     </div>
   </div>
 
@@ -870,8 +967,10 @@
       }
 
       /* ---------- State ---------- */
-      function emptyListState() {
+      function emptyListState(name, builtin) {
         return {
+          name: name || "",
+          builtin: !!builtin,
           tripDate: todayISO(),
           hidePurchased: false,
           dismissals: [],
@@ -882,13 +981,76 @@
 
       function defaultState() {
         return {
-          version: 3,
+          version: 4,
           activeListId: "vabbe",
           lists: {
-            vabbe: emptyListState(),
-            campbell: emptyListState()
+            vabbe: emptyListState("Vabbe Checklist", true),
+            campbell: emptyListState("Campbell Checklist", true)
           }
         };
+      }
+
+      function titleFromSlug(id) {
+        var words = String(id || "").replace(/-/g, " ").replace(/\b\w/g, function (c) { return c.toUpperCase(); }).trim();
+        if (!words) words = "List";
+        if (!/checklist$/i.test(words)) words += " Checklist";
+        return words;
+      }
+
+      function slugify(name) {
+        var s = String(name || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+        return s || "list";
+      }
+
+      function isBuiltinList(id) {
+        if (id === "vabbe" || id === "campbell") return true;
+        var ls = state.lists && state.lists[id];
+        return !!(ls && ls.builtin);
+      }
+
+      function listIds() {
+        var ids = Object.keys((state && state.lists) || {});
+        var builtins = ["vabbe", "campbell"].filter(function (id) { return ids.indexOf(id) !== -1; });
+        var rest = ids.filter(function (id) { return builtins.indexOf(id) === -1; });
+        rest.sort(function (a, b) { return listName(a).localeCompare(listName(b)); });
+        return builtins.concat(rest);
+      }
+
+      function uniqueListId(name) {
+        var base = slugify(name);
+        if (base === "new" || base === "__new__") base = "list";
+        var id = base;
+        var n = 2;
+        while (state.lists[id]) { id = base + "-" + n; n += 1; }
+        return id;
+      }
+
+      function normalizeListBucket(ls, id) {
+        ls = ls && typeof ls === "object" ? ls : {};
+        var out = emptyListState(
+          ls.name || LIST_META[id] || titleFromSlug(id),
+          ls.builtin != null ? !!ls.builtin : (id === "vabbe" || id === "campbell")
+        );
+        if (typeof ls.tripDate === "string") out.tripDate = ls.tripDate;
+        out.hidePurchased = !!ls.hidePurchased;
+        out.dismissals = Array.isArray(ls.dismissals) ? ls.dismissals : migrateDismissals(ls);
+        out.history = Array.isArray(ls.history) ? ls.history : [];
+        out.items = (ls.items || []).filter(function (item) {
+          return item && typeof item.id === "string" && typeof item.name === "string";
+        }).map(function (item) { return coerceItem(item, "local"); });
+        return out;
+      }
+
+      function upgradeClientState(parsed) {
+        var next = { version: 4, activeListId: parsed.activeListId || "vabbe", lists: {} };
+        Object.keys(parsed.lists || {}).forEach(function (id) {
+          if (!id) return;
+          next.lists[id] = normalizeListBucket(parsed.lists[id], id);
+        });
+        if (!next.lists.vabbe) next.lists.vabbe = emptyListState("Vabbe Checklist", true);
+        if (!next.lists.campbell) next.lists.campbell = emptyListState("Campbell Checklist", true);
+        if (!next.lists[next.activeListId]) next.activeListId = "vabbe";
+        return next;
       }
 
       function serverRev(item) {
@@ -968,20 +1130,8 @@
 
       function loadState() {
         var parsed = SyncAdapter.load();
-        if (parsed && parsed.version === 3 && parsed.lists) {
-          parsed.activeListId = parsed.activeListId === "campbell" ? "campbell" : "vabbe";
-          Object.keys(LIST_META).forEach(function (id) {
-            if (!parsed.lists[id]) parsed.lists[id] = emptyListState();
-            var ls = parsed.lists[id];
-            ls.hidePurchased = !!ls.hidePurchased;
-            ls.dismissals = Array.isArray(ls.dismissals) ? ls.dismissals : migrateDismissals(ls);
-            ls.history = Array.isArray(ls.history) ? ls.history : [];
-            ls.items = (ls.items || []).filter(function (item) {
-              return item && typeof item.id === "string" && typeof item.name === "string";
-            }).map(function (item) { return coerceItem(item, "local"); });
-            if (!ls.tripDate) ls.tripDate = todayISO();
-          });
-          return parsed;
+        if (parsed && parsed.lists && (parsed.version === 3 || parsed.version === 4)) {
+          return upgradeClientState(parsed);
         }
         if (parsed) return wrapLegacyState(parsed);
         for (var i = 0; i < LEGACY_KEYS.length; i++) {
@@ -1008,8 +1158,10 @@
       }
 
       function listName(id) {
-        id = id || state.activeListId;
-        return LIST_META[id] || (id.charAt(0).toUpperCase() + id.slice(1) + " Checklist");
+        id = id || (state && state.activeListId);
+        var ls = state && state.lists && state.lists[id];
+        if (ls && ls.name) return ls.name;
+        return LIST_META[id] || titleFromSlug(id);
       }
 
       /* ---------- Dismissals / merge ---------- */
@@ -1126,9 +1278,14 @@
       function syncFromServer() {
         return fetchServerList().then(function (data) {
           state._lastServer = data;
-          Object.keys(LIST_META).forEach(function (id) {
-            if (!state.lists[id]) state.lists[id] = emptyListState();
-            mergeListFromServer(state.lists[id], data.lists[id]);
+          var catalog = (data && data.lists) || {};
+          Object.keys(catalog).forEach(function (id) {
+            if (!state.lists[id]) {
+              state.lists[id] = emptyListState((catalog[id] && catalog[id].name) || titleFromSlug(id), id === "vabbe" || id === "campbell");
+            } else if (catalog[id] && catalog[id].name && isBuiltinList(id) && !state.lists[id].name) {
+              state.lists[id].name = catalog[id].name;
+            }
+            mergeListFromServer(state.lists[id], catalog[id]);
           });
           saveState();
           populateSectionSelects();
@@ -1153,8 +1310,10 @@
       function snapshot(label) {
         undoStack = {
           label: label,
-          listId: state.activeListId,
-          list: JSON.parse(JSON.stringify(active()))
+          state: JSON.parse(JSON.stringify({
+            activeListId: state.activeListId,
+            lists: state.lists
+          }))
         };
       }
 
@@ -1177,8 +1336,13 @@
         var snap = undoStack;
         undoStack = null;
         hideToast();
-        if (!state.lists[snap.listId]) state.lists[snap.listId] = emptyListState();
-        state.lists[snap.listId] = snap.list;
+        if (snap.state) {
+          state.activeListId = snap.state.activeListId;
+          state.lists = snap.state.lists;
+        } else if (snap.listId) {
+          if (!state.lists[snap.listId]) state.lists[snap.listId] = emptyListState();
+          state.lists[snap.listId] = snap.list;
+        }
         saveState();
         render();
       }
@@ -1432,15 +1596,18 @@
 
       function bindEls() {
         [
-          "listSwitcher", "listTitle", "statPurchased", "statCarryover", "statNew",
+          "listSwitcherWrap", "listSwitcherBtn", "listSwitcherLabel", "listMenu",
+          "manageListBtn", "listTitle", "statPurchased", "statCarryover", "statNew",
           "subtitle", "syncStatus", "tripTotal", "progressLabel", "progressFill",
-          "hidePurchased", "sections", "addForm", "addName", "addQty",
+          "hidePurchased", "sections",
           "quickAdd", "quickAddForm", "resetBtn", "resetModal", "cancelReset",
           "confirmReset", "historyBtn", "exportBtn", "historyView", "historyList",
           "historyBack", "shopView", "toast", "toastMsg", "undoBtn",
           "editSheet", "editName", "editQty", "editSection", "editPrice",
           "editUnit", "editRegular", "editPar", "editSave", "editCancel",
-          "priceSheet", "priceValue", "priceUnit", "priceSave", "priceSkip"
+          "priceSheet", "priceValue", "priceUnit", "priceSave", "priceSkip",
+          "listModal", "listForm", "listModalTitle", "listNameInput", "listSave", "listDeleteBtn", "listCancel",
+          "deleteListModal", "deleteListTitle", "deleteListMsg", "cancelDeleteList", "confirmDeleteList"
         ].forEach(function (id) { els[id] = document.getElementById(id); });
       }
 
@@ -1498,9 +1665,9 @@
 
       function render() {
         var ls = active();
-        els.listSwitcher.value = state.activeListId;
+        renderSwitcher();
         els.listTitle.textContent = listName();
-        document.title = listName();
+        document.title = listName() + " · EZ Check List";
 
         var items = ls.items;
         var total = items.length;
@@ -1571,7 +1738,7 @@
         if (!shownAny) {
           var empty = document.createElement("p");
           empty.className = "empty-note";
-          empty.textContent = total && ls.hidePurchased ? "All items are purchased." : "No items yet. Add one below.";
+          empty.textContent = total && ls.hidePurchased ? "All items are purchased." : "No items yet. Add some below.";
           root.appendChild(empty);
         }
       }
@@ -1781,30 +1948,198 @@
       }
 
       function switchList(id) {
-        if (!LIST_META[id]) return;
+        if (!state.lists[id]) return;
+        state.activeListId = id;
+        saveState();
+        view = "shop";
+        closeListMenu();
+        render();
+      }
+
+      function createList(name) {
+        name = (name || "").trim();
+        if (!name) return null;
+        snapshot("Created checklist");
+        var id = uniqueListId(name);
+        state.lists[id] = emptyListState(name, false);
         state.activeListId = id;
         saveState();
         view = "shop";
         render();
+        showToast("Created " + name);
+        return id;
+      }
+
+      function renameList(id, name) {
+        id = id || state.activeListId;
+        name = (name || "").trim();
+        if (!name || !state.lists[id]) return;
+        snapshot("Renamed checklist");
+        state.lists[id].name = name;
+        saveState();
+        render();
+        showToast("Renamed to " + name);
+      }
+
+      function deleteListById(id) {
+        id = id || state.activeListId;
+        if (!state.lists[id]) return;
+        if (Object.keys(state.lists).length <= 1) {
+          showToast("Can't delete the last checklist");
+          return;
+        }
+        snapshot("Deleted " + listName(id));
+        var name = listName(id);
+        delete state.lists[id];
+        if (state.activeListId === id) {
+          state.activeListId = state.lists.vabbe ? "vabbe" : Object.keys(state.lists)[0];
+        }
+        saveState();
+        view = "shop";
+        render();
+        showToast("Deleted " + name);
+      }
+
+      var listModalMode = "create";
+      var pendingDeleteListId = null;
+
+      function openListMenu() {
+        renderSwitcher();
+        els.listMenu.hidden = false;
+        els.listSwitcherBtn.setAttribute("aria-expanded", "true");
+      }
+
+      function closeListMenu() {
+        if (!els.listMenu) return;
+        els.listMenu.hidden = true;
+        if (els.listSwitcherBtn) els.listSwitcherBtn.setAttribute("aria-expanded", "false");
+      }
+
+      function toggleListMenu() {
+        if (els.listMenu.hidden) openListMenu();
+        else closeListMenu();
+      }
+
+      function renderSwitcher() {
+        if (!els.listMenu || !state) return;
+        var menu = els.listMenu;
+        var keepOpen = !menu.hidden;
+        menu.textContent = "";
+        listIds().forEach(function (id) {
+          var opt = document.createElement("button");
+          opt.type = "button";
+          opt.className = "list-option" + (id === state.activeListId ? " selected" : "");
+          opt.setAttribute("role", "option");
+          opt.setAttribute("data-testid", "list-option-" + id);
+          opt.setAttribute("data-id", id);
+          opt.setAttribute("aria-selected", id === state.activeListId ? "true" : "false");
+          opt.textContent = listName(id);
+          opt.addEventListener("click", function (e) {
+            e.stopPropagation();
+            closeListMenu();
+            switchList(id);
+          });
+          menu.appendChild(opt);
+        });
+        var sep = document.createElement("div");
+        sep.className = "list-menu-sep";
+        sep.setAttribute("role", "separator");
+        menu.appendChild(sep);
+        var add = document.createElement("button");
+        add.type = "button";
+        add.className = "list-option list-option-new";
+        add.setAttribute("data-testid", "new-list");
+        add.textContent = "+ New checklist…";
+        add.addEventListener("click", function (e) {
+          e.stopPropagation();
+          closeListMenu();
+          openListModal("create");
+        });
+        menu.appendChild(add);
+        if (els.listSwitcherLabel) els.listSwitcherLabel.textContent = listName();
+        els.listSwitcherBtn.setAttribute("aria-expanded", keepOpen ? "true" : "false");
+        if (keepOpen) menu.hidden = false;
+      }
+
+      function openListModal(mode) {
+        hideToast();
+        closeListMenu();
+        listModalMode = mode === "manage" || mode === "rename" ? "manage" : "create";
+        els.listModalTitle.textContent = listModalMode === "create" ? "New checklist" : "Rename checklist";
+        els.listSave.textContent = listModalMode === "create" ? "Create" : "Save";
+        els.listNameInput.value = listModalMode === "create" ? "" : listName();
+        if (els.listDeleteBtn) els.listDeleteBtn.hidden = listModalMode === "create";
+        els.listModal.hidden = false;
+        els.listNameInput.focus();
+        els.listNameInput.select();
+      }
+
+      function closeListModal() {
+        if (els.listModal) els.listModal.hidden = true;
+      }
+
+      function openDeleteListModal(id) {
+        hideToast();
+        closeListModal();
+        pendingDeleteListId = id || state.activeListId;
+        if (!state.lists[pendingDeleteListId]) return;
+        var name = listName(pendingDeleteListId);
+        var builtin = isBuiltinList(pendingDeleteListId);
+        els.deleteListTitle.textContent = "Delete " + name + "?";
+        els.deleteListMsg.textContent = builtin
+          ? name + " is one of the default checklists. This removes all of its items, checks, and history."
+          : "This removes all items, checks, and history for " + name + ".";
+        els.deleteListModal.hidden = false;
+      }
+
+      function closeDeleteListModal() {
+        if (els.deleteListModal) els.deleteListModal.hidden = true;
+        pendingDeleteListId = null;
       }
 
       function bindEvents() {
-        els.listSwitcher.addEventListener("change", function () {
-          switchList(els.listSwitcher.value);
+        els.listSwitcherBtn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          toggleListMenu();
+        });
+        els.manageListBtn.addEventListener("click", function (e) {
+          e.stopPropagation();
+          closeListMenu();
+          openListModal("manage");
+        });
+        document.addEventListener("click", function (e) {
+          if (!els.listMenu || els.listMenu.hidden) return;
+          if (els.listSwitcherWrap && els.listSwitcherWrap.contains(e.target)) return;
+          closeListMenu();
+        });
+        els.listForm.addEventListener("submit", function (e) {
+          e.preventDefault();
+          var name = els.listNameInput.value.trim();
+          if (!name) return;
+          if (listModalMode === "create") createList(name);
+          else renameList(state.activeListId, name);
+          closeListModal();
+        });
+        els.listDeleteBtn.addEventListener("click", function () {
+          openDeleteListModal(state.activeListId);
+        });
+        els.listCancel.addEventListener("click", closeListModal);
+        els.listModal.addEventListener("click", function (e) {
+          if (e.target === els.listModal) closeListModal();
+        });
+        els.cancelDeleteList.addEventListener("click", closeDeleteListModal);
+        els.confirmDeleteList.addEventListener("click", function () {
+          var id = pendingDeleteListId;
+          closeDeleteListModal();
+          if (id) deleteListById(id);
+        });
+        els.deleteListModal.addEventListener("click", function (e) {
+          if (e.target === els.deleteListModal) closeDeleteListModal();
         });
         els.hidePurchased.addEventListener("change", function () {
           active().hidePurchased = els.hidePurchased.checked;
           saveState();
           render();
-        });
-        els.addForm.addEventListener("submit", function (e) {
-          e.preventDefault();
-          var name = els.addName.value.trim();
-          if (!name) return;
-          var qty = els.addQty.value.trim();
-          addItems([{ name: name, qty: qty }], "local");
-          els.addForm.reset();
-          els.addName.focus();
         });
         els.quickAddForm.addEventListener("submit", function (e) {
           e.preventDefault();
@@ -1893,8 +2228,11 @@
         document.addEventListener("keydown", function (e) {
           if (e.key !== "Escape") return;
           if (!els.resetModal.hidden) closeModal();
+          else if (!els.deleteListModal.hidden) closeDeleteListModal();
+          else if (!els.listModal.hidden) closeListModal();
           else if (!els.editSheet.hidden) closeEditSheet();
           else if (!els.priceSheet.hidden) els.priceSkip.click();
+          else closeListMenu();
         });
       }
 
@@ -1933,6 +2271,9 @@
         parseQtyLine: parseQtyLine,
         getState: function () { return state; },
         switchList: switchList,
+        createList: createList,
+        renameList: renameList,
+        deleteList: deleteListById,
         currentTripCsv: currentTripCsv,
         undo: undo
       };
