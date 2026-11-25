@@ -1,0 +1,127 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-25T04:24:26Z",
+  "sections": [
+    "Fresh Produce & Fruit",
+    "Meat & Deli",
+    "Pantry",
+    "Paper & To-Go Supplies",
+    "Cleaning"
+  ],
+  "items": [
+    {
+      "id": "srv-blueberries",
+      "name": "Blueberries",
+      "section": "Fresh Produce & Fruit",
+      "qty": ""
+    },
+    {
+      "id": "srv-strawberries",
+      "name": "Strawberries",
+      "section": "Fresh Produce & Fruit",
+      "qty": ""
+    },
+    {
+      "id": "srv-bacon",
+      "name": "Bacon",
+      "section": "Meat & Deli",
+      "qty": ""
+    },
+    {
+      "id": "srv-pastrami",
+      "name": "Pastrami",
+      "section": "Meat & Deli",
+      "qty": ""
+    },
+    {
+      "id": "srv-turkey",
+      "name": "Turkey",
+      "section": "Meat & Deli",
+      "qty": ""
+    },
+    {
+      "id": "srv-pepper-jack-cheese",
+      "name": "Pepper jack cheese",
+      "section": "Meat & Deli",
+      "qty": ""
+    },
+    {
+      "id": "srv-american-cheese",
+      "name": "American cheese",
+      "section": "Meat & Deli",
+      "qty": ""
+    },
+    {
+      "id": "srv-biscoff",
+      "name": "Biscoff",
+      "section": "Pantry",
+      "qty": ""
+    },
+    {
+      "id": "srv-almond-butter",
+      "name": "Almond butter",
+      "section": "Pantry",
+      "qty": ""
+    },
+    {
+      "id": "srv-pineapple-juice",
+      "name": "Pineapple juice",
+      "section": "Pantry",
+      "qty": ""
+    },
+    {
+      "id": "srv-lemon-juice",
+      "name": "Lemon juice",
+      "section": "Pantry",
+      "qty": "For FHH"
+    },
+    {
+      "id": "srv-clear-frying-oil",
+      "name": "Clear frying oil",
+      "section": "Pantry",
+      "qty": ""
+    },
+    {
+      "id": "srv-napkins",
+      "name": "Napkins",
+      "section": "Paper & To-Go Supplies",
+      "qty": "2 cs"
+    },
+    {
+      "id": "srv-small-to-go-bags",
+      "name": "Small to-go bags",
+      "section": "Paper & To-Go Supplies",
+      "qty": "1 cs"
+    },
+    {
+      "id": "srv-large-to-go-bags",
+      "name": "Large to-go bags",
+      "section": "Paper & To-Go Supplies",
+      "qty": "1 cs"
+    },
+    {
+      "id": "srv-plastic-food-wrap",
+      "name": "Plastic food wrap",
+      "section": "Paper & To-Go Supplies",
+      "qty": ""
+    },
+    {
+      "id": "srv-9x9",
+      "name": "9x9",
+      "section": "Paper & To-Go Supplies",
+      "qty": ""
+    },
+    {
+      "id": "srv-degreaser",
+      "name": "Degreaser",
+      "section": "Cleaning",
+      "qty": ""
+    },
+    {
+      "id": "srv-air-freshener",
+      "name": "Air freshener",
+      "section": "Cleaning",
+      "qty": ""
+    }
+  ]
+}

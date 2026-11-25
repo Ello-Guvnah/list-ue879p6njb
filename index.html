@@ -1,0 +1,1119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1a1a1a">
+  <meta name="color-scheme" content="dark">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Costco List">
+  <meta name="application-name" content="Costco List">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <title>Costco Shopping Checklist</title>
+  <script>
+    (function () {
+      var path = window.location.pathname;
+      if (path && !path.endsWith("/") && !/\.html?$/i.test(path)) {
+        window.location.replace(path + "/" + window.location.search + window.location.hash);
+      }
+    })();
+  </script>
+  <style>
+    :root {
+      --bg: #1a1a1a;
+      --card: #222222;
+      --border: rgba(255, 255, 255, 0.08);
+      --border-strong: rgba(255, 255, 255, 0.16);
+      --text: #ffffff;
+      --secondary: #9a9a9a;
+      --muted: #6e6e6e;
+      --check-fill: #ffffff;
+      --check-mark: #1a1a1a;
+      --carry-bg: rgba(212, 165, 116, 0.16);
+      --carry-text: #d4a574;
+      --danger: #c97a7a;
+      --radius: 16px;
+      --tap: 48px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100%;
+      min-height: 100dvh;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      padding-top: env(safe-area-inset-top);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+
+    button, input, select {
+      font: inherit;
+      color: inherit;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    button {
+      background: none;
+      border: 0;
+      cursor: pointer;
+    }
+
+    .app {
+      max-width: 430px;
+      margin: 0 auto;
+      padding: 16px 16px calc(28px + env(safe-area-inset-bottom));
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 22px;
+    }
+
+    .stat {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px 8px 12px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    .stat-label {
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--secondary);
+      line-height: 1.2;
+    }
+
+    h1 {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+    }
+
+    .subtitle {
+      margin-top: 6px;
+      font-size: 14px;
+      color: var(--secondary);
+    }
+
+    .sync-status {
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--muted);
+      min-height: 1.2em;
+    }
+
+    .sync-status[data-state="offline"] { color: var(--carry-text); }
+    .sync-status[data-state="error"] { color: var(--danger); }
+
+    .progress-block {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      margin: 18px 0 14px;
+    }
+
+    .progress-meta {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .progress-label {
+      font-size: 14px;
+      color: var(--secondary);
+      margin-bottom: 8px;
+    }
+
+    .progress-track {
+      height: 3px;
+      background: rgba(255, 255, 255, 0.12);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: #fff;
+      border-radius: 99px;
+      transition: width 0.2s ease;
+    }
+
+    .reset-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      height: 36px;
+      padding: 0 14px 0 12px;
+      border: 1px solid var(--border-strong);
+      border-radius: 99px;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 500;
+      touch-action: manipulation;
+    }
+
+    .reset-btn svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    .reset-btn:active { background: rgba(255, 255, 255, 0.06); }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      margin: 0 0 16px;
+    }
+
+    .hide-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--secondary);
+      cursor: pointer;
+      user-select: none;
+      min-height: 44px;
+      touch-action: manipulation;
+    }
+
+    .switch {
+      position: relative;
+      width: 36px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    .switch input {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 36px;
+      height: 20px;
+      margin: 0;
+      background: #3a3a3a;
+      border-radius: 99px;
+      border: 1px solid var(--border-strong);
+      cursor: pointer;
+      display: block;
+    }
+
+    .switch input::after {
+      content: "";
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 16px;
+      height: 16px;
+      background: #cfcfcf;
+      border-radius: 50%;
+      transition: transform 0.15s ease, background 0.15s ease;
+    }
+
+    .switch input:checked {
+      background: #fff;
+      border-color: #fff;
+    }
+
+    .switch input:checked::after {
+      transform: translateX(16px);
+      background: #1a1a1a;
+    }
+
+    .section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px 12px;
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 600;
+    }
+
+    .section-count {
+      font-size: 13px;
+      color: var(--secondary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .item {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      border-top: 1px solid var(--border);
+    }
+
+    .item-main {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      min-width: 0;
+      min-height: var(--tap);
+      padding: 10px 4px 10px 16px;
+      text-align: left;
+      touch-action: manipulation;
+    }
+
+    .item-main:active { background: rgba(255, 255, 255, 0.03); }
+
+    .check {
+      width: 24px;
+      height: 24px;
+      border: 1.5px solid #8a8a8a;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      background: transparent;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .check svg {
+      width: 12px;
+      height: 12px;
+      opacity: 0;
+      color: var(--check-mark);
+    }
+
+    .item.purchased .check {
+      background: var(--check-fill);
+      border-color: var(--check-fill);
+    }
+
+    .item.purchased .check svg { opacity: 1; }
+
+    .item-body {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px 8px;
+    }
+
+    .item-name {
+      font-size: 16px;
+      line-height: 1.3;
+      transition: color 0.15s ease;
+    }
+
+    .item-qty {
+      font-size: 13px;
+      color: var(--secondary);
+    }
+
+    .item.purchased .item-name {
+      color: var(--muted);
+      text-decoration: line-through;
+      text-decoration-thickness: 1px;
+    }
+
+    .item.purchased .item-qty {
+      color: var(--muted);
+      text-decoration: line-through;
+    }
+
+    .tag {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      text-transform: lowercase;
+      color: var(--carry-text);
+      background: var(--carry-bg);
+      border-radius: 99px;
+      padding: 2px 7px;
+      line-height: 1.4;
+    }
+
+    .delete-btn {
+      flex-shrink: 0;
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      border-radius: 50%;
+      touch-action: manipulation;
+    }
+
+    .delete-btn:active { color: var(--danger); background: rgba(201, 122, 122, 0.12); }
+
+    .delete-btn svg { width: 14px; height: 14px; }
+
+    .empty-note {
+      color: var(--secondary);
+      font-size: 14px;
+      text-align: center;
+      padding: 24px 8px;
+    }
+
+    .add-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-top: 8px;
+    }
+
+    .add-card h2 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+
+    .add-card label {
+      display: block;
+      font-size: 12px;
+      color: var(--secondary);
+      margin: 0 0 6px;
+    }
+
+    .field { margin-bottom: 12px; }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 10px;
+    }
+
+    input[type="text"], select {
+      width: 100%;
+      height: 44px;
+      background: #1a1a1a;
+      border: 1px solid var(--border-strong);
+      border-radius: 10px;
+      padding: 0 12px;
+      outline: none;
+    }
+
+    input[type="text"]:focus, select:focus {
+      border-color: rgba(255, 255, 255, 0.35);
+    }
+
+    select {
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%239a9a9a' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 32px;
+    }
+
+    .add-submit {
+      width: 100%;
+      height: 46px;
+      border-radius: 12px;
+      background: #fff;
+      color: #1a1a1a;
+      font-weight: 600;
+      font-size: 15px;
+      touch-action: manipulation;
+    }
+
+    .add-submit:active { opacity: 0.85; }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.64);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+      z-index: 20;
+    }
+
+    .modal-backdrop[hidden] { display: none; }
+
+    .modal {
+      width: 100%;
+      max-width: 430px;
+      background: #2a2a2a;
+      border: 1px solid var(--border-strong);
+      border-radius: 18px;
+      padding: 20px 18px 16px;
+    }
+
+    .modal h2 {
+      font-size: 18px;
+      font-weight: 650;
+      margin-bottom: 8px;
+    }
+
+    .modal p {
+      font-size: 14px;
+      color: var(--secondary);
+      line-height: 1.45;
+      margin-bottom: 18px;
+    }
+
+    .modal-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .modal-actions button {
+      height: 44px;
+      border-radius: 12px;
+      font-weight: 600;
+      touch-action: manipulation;
+    }
+
+    .btn-cancel {
+      background: #1a1a1a;
+      border: 1px solid var(--border-strong);
+    }
+
+    .btn-confirm {
+      background: #fff;
+      color: #1a1a1a;
+    }
+
+    @media (min-width: 500px) {
+      .modal-backdrop { align-items: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value" id="statPurchased" data-testid="stat-purchased">0</div>
+        <div class="stat-label">Purchased</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="statCarryover" data-testid="stat-carryover">0</div>
+        <div class="stat-label">Carryover</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="statNew" data-testid="stat-new">0</div>
+        <div class="stat-label">New items</div>
+      </div>
+    </div>
+
+    <header>
+      <h1>Costco Shopping Checklist</h1>
+      <p class="subtitle" id="subtitle"></p>
+      <p class="sync-status" id="syncStatus" data-testid="sync-status" aria-live="polite"></p>
+    </header>
+
+    <div class="progress-block">
+      <div class="progress-meta">
+        <div class="progress-label" id="progressLabel">0 of 0 purchased</div>
+        <div class="progress-track" aria-hidden="true">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </div>
+      <button type="button" class="reset-btn" id="resetBtn" data-testid="reset" aria-label="Reset list for a new trip">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+        Reset
+      </button>
+    </div>
+
+    <div class="toolbar">
+      <label class="hide-toggle">
+        <span class="switch">
+          <input type="checkbox" id="hidePurchased" data-testid="hide-purchased">
+        </span>
+        Hide purchased
+      </label>
+    </div>
+
+    <div id="sections"></div>
+
+    <form class="add-card" id="addForm" autocomplete="off">
+      <h2>Add item</h2>
+      <div class="field">
+        <label for="addName">Item</label>
+        <input type="text" id="addName" data-testid="add-name" name="name" placeholder="Item name" maxlength="80" required>
+      </div>
+      <div class="row-2">
+        <div class="field">
+          <label for="addSection">Section</label>
+          <select id="addSection" data-testid="add-section" name="section"></select>
+        </div>
+        <div class="field">
+          <label for="addQty">Qty / note</label>
+          <input type="text" id="addQty" data-testid="add-qty" name="qty" placeholder="Optional" maxlength="40">
+        </div>
+      </div>
+      <button type="submit" class="add-submit" data-testid="add-submit">Add item</button>
+    </form>
+  </div>
+
+  <div class="modal-backdrop" id="resetModal" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="resetTitle">
+      <h2 id="resetTitle">Start a new trip?</h2>
+      <p>Checks will be cleared. Unbought items will be tagged as carryover. Bought items stay on the list as regular items.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" id="cancelReset" data-testid="cancel-reset">Cancel</button>
+        <button type="button" class="btn-confirm" id="confirmReset" data-testid="confirm-reset">Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var STORAGE_KEY = "costco-checklist-v2";
+      var LEGACY_KEY = "costco-checklist-v1";
+      var SERVER_CACHE_KEY = "costco-checklist-server-list-v1";
+      var LIST_URL = "list.json";
+
+      var DEFAULT_SECTIONS = [
+        "Fresh Produce & Fruit",
+        "Meat & Deli",
+        "Pantry",
+        "Paper & To-Go Supplies",
+        "Cleaning"
+      ];
+
+      var state = loadState();
+      var sections = (state.lastServerList && state.lastServerList.sections && state.lastServerList.sections.length)
+        ? state.lastServerList.sections.slice()
+        : DEFAULT_SECTIONS.slice();
+
+      var els = {
+        statPurchased: document.getElementById("statPurchased"),
+        statCarryover: document.getElementById("statCarryover"),
+        statNew: document.getElementById("statNew"),
+        subtitle: document.getElementById("subtitle"),
+        syncStatus: document.getElementById("syncStatus"),
+        progressLabel: document.getElementById("progressLabel"),
+        progressFill: document.getElementById("progressFill"),
+        sections: document.getElementById("sections"),
+        hidePurchased: document.getElementById("hidePurchased"),
+        addForm: document.getElementById("addForm"),
+        addName: document.getElementById("addName"),
+        addSection: document.getElementById("addSection"),
+        addQty: document.getElementById("addQty"),
+        resetBtn: document.getElementById("resetBtn"),
+        resetModal: document.getElementById("resetModal"),
+        cancelReset: document.getElementById("cancelReset"),
+        confirmReset: document.getElementById("confirmReset")
+      };
+
+      function uid() {
+        if (window.crypto && crypto.randomUUID) return "local-" + crypto.randomUUID();
+        return "local-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+      }
+
+      function todayISO() {
+        var parts = new Intl.DateTimeFormat("en-CA", {
+          timeZone: "America/Los_Angeles",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit"
+        }).formatToParts(new Date());
+        var map = {};
+        parts.forEach(function (p) { map[p.type] = p.value; });
+        return map.year + "-" + map.month + "-" + map.day;
+      }
+
+      function formatDate(iso) {
+        var d = iso ? new Date(iso + "T12:00:00") : new Date();
+        return d.toLocaleDateString("en-US", {
+          weekday: "short",
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          timeZone: "America/Los_Angeles"
+        });
+      }
+
+      function normalize(s) {
+        return String(s || "").trim().toLowerCase();
+      }
+
+      function defaultState() {
+        return {
+          version: 2,
+          tripDate: todayISO(),
+          hidePurchased: false,
+          dismissedServerIds: [],
+          lastServerList: null,
+          items: []
+        };
+      }
+
+      function coerceItem(item, fallbackSource) {
+        return {
+          id: String(item.id),
+          name: item.name,
+          section: item.section || DEFAULT_SECTIONS[0],
+          qty: typeof item.qty === "string" ? item.qty : "",
+          purchased: !!item.purchased,
+          carryover: !!item.carryover,
+          source: item.source === "server" || item.source === "local" ? item.source : (fallbackSource || "local")
+        };
+      }
+
+      function migrateLegacy(parsed) {
+        var next = defaultState();
+        if (typeof parsed.tripDate === "string") next.tripDate = parsed.tripDate;
+        next.hidePurchased = !!parsed.hidePurchased;
+        next.items = (parsed.items || []).filter(function (item) {
+          return item && item.id && item.name;
+        }).map(function (item) {
+          return coerceItem(item, "local");
+        });
+        return next;
+      }
+
+      function loadState() {
+        try {
+          var raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            var parsed = JSON.parse(raw);
+            if (parsed && parsed.version === 2 && Array.isArray(parsed.items)) {
+              parsed.hidePurchased = !!parsed.hidePurchased;
+              parsed.dismissedServerIds = Array.isArray(parsed.dismissedServerIds) ? parsed.dismissedServerIds : [];
+              parsed.items = parsed.items.filter(function (item) {
+                return item && typeof item.id === "string" && typeof item.name === "string";
+              }).map(function (item) { return coerceItem(item, "local"); });
+              if (parsed.lastServerList && !Array.isArray(parsed.lastServerList.items)) {
+                parsed.lastServerList = null;
+              }
+              return parsed;
+            }
+          }
+          var legacy = localStorage.getItem(LEGACY_KEY);
+          if (legacy) return migrateLegacy(JSON.parse(legacy));
+        } catch (err) {
+          console.warn("Could not read saved list", err);
+        }
+        // Offline fallback for the last server catalog, in case item state is missing
+        try {
+          var cached = localStorage.getItem(SERVER_CACHE_KEY);
+          if (cached) {
+            var list = JSON.parse(cached);
+            var state = defaultState();
+            state.lastServerList = list;
+            return state;
+          }
+        } catch (err2) {}
+        return defaultState();
+      }
+
+      function saveState() {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          if (state.lastServerList) {
+            localStorage.setItem(SERVER_CACHE_KEY, JSON.stringify(state.lastServerList));
+          }
+        } catch (err) {
+          console.warn("Could not save list", err);
+        }
+      }
+
+      function setSyncStatus(kind, message) {
+        els.syncStatus.textContent = message || "";
+        els.syncStatus.setAttribute("data-state", kind || "");
+        els.syncStatus.setAttribute("data-testid", "sync-status");
+      }
+
+      function isValidServerList(data) {
+        return data && Array.isArray(data.items) && data.items.every(function (item) {
+          return item && typeof item.id === "string" && typeof item.name === "string";
+        });
+      }
+
+      function fetchServerList() {
+        return fetch(LIST_URL + "?t=" + Date.now(), { cache: "no-store" }).then(function (res) {
+          if (!res.ok) throw new Error("list.json HTTP " + res.status);
+          return res.json();
+        }).then(function (data) {
+          if (!isValidServerList(data)) throw new Error("list.json shape is invalid");
+          return data;
+        });
+      }
+
+      function mergeServerList(server) {
+        var dismissed = {};
+        (state.dismissedServerIds || []).forEach(function (id) { dismissed[id] = true; });
+
+        var byId = {};
+        var byKey = {};
+        var used = {};
+        state.items.forEach(function (item) {
+          byId[item.id] = item;
+          var key = normalize(item.name) + "\t" + normalize(item.section);
+          if (!byKey[key]) byKey[key] = item;
+        });
+
+        var serverIds = {};
+        var merged = [];
+        (server.items || []).forEach(function (sItem) {
+          serverIds[sItem.id] = true;
+          if (dismissed[sItem.id]) return;
+
+          var local = byId[sItem.id];
+          if (!local) {
+            var key = normalize(sItem.name) + "\t" + normalize(sItem.section);
+            var match = byKey[key];
+            if (match && match.source !== "server" && !used[match.id]) {
+              local = match;
+            }
+          }
+          if (local) {
+            used[local.id] = true;
+            local.id = sItem.id;
+            local.name = sItem.name;
+            local.section = sItem.section || local.section;
+            local.qty = typeof sItem.qty === "string" ? sItem.qty : (sItem.qty || "");
+            local.source = "server";
+            merged.push(local);
+          } else {
+            merged.push({
+              id: sItem.id,
+              name: sItem.name,
+              section: sItem.section || DEFAULT_SECTIONS[0],
+              qty: typeof sItem.qty === "string" ? sItem.qty : "",
+              purchased: false,
+              carryover: false,
+              source: "server"
+            });
+          }
+        });
+
+        state.items.forEach(function (item) {
+          if (used[item.id]) return;
+          if (item.source === "server" || serverIds[item.id]) return;
+          merged.push(item);
+        });
+
+        state.items = merged;
+        if (Array.isArray(server.sections) && server.sections.length) {
+          sections = server.sections.slice();
+        }
+        state.lastServerList = server;
+      }
+
+      function syncFromServer() {
+        return fetchServerList().then(function (data) {
+          mergeServerList(data);
+          saveState();
+          populateSections();
+          render();
+          setSyncStatus("ok", "");
+          return true;
+        }).catch(function (err) {
+          if (state.lastServerList && state.lastServerList.items) {
+            // Already merged on a previous visit; keep checks and use cached catalog.
+            setSyncStatus("offline", "Offline — using the last saved list");
+          } else if (state.items.length) {
+            setSyncStatus("offline", "Offline — using the last saved list");
+          } else {
+            setSyncStatus("error", "Couldn't load the list. Reopen when you're online.");
+          }
+          console.warn("List sync failed", err);
+          return false;
+        });
+      }
+
+      function findItem(id) {
+        for (var i = 0; i < state.items.length; i++) {
+          if (state.items[i].id === id) return state.items[i];
+        }
+        return null;
+      }
+
+      function toggleItem(id) {
+        var item = findItem(id);
+        if (!item) return;
+        item.purchased = !item.purchased;
+        saveState();
+        render();
+      }
+
+      function deleteItem(id) {
+        var item = findItem(id);
+        if (!item) return;
+        if (item.source === "server") {
+          if (state.dismissedServerIds.indexOf(id) === -1) state.dismissedServerIds.push(id);
+        }
+        state.items = state.items.filter(function (row) { return row.id !== id; });
+        saveState();
+        render();
+      }
+
+      function addItem(name, section, qty) {
+        state.items.push({
+          id: uid(),
+          name: name,
+          section: section,
+          qty: qty || "",
+          purchased: false,
+          carryover: false,
+          source: "local"
+        });
+        saveState();
+        render();
+      }
+
+      function resetTrip() {
+        state.items.forEach(function (item) {
+          item.carryover = !item.purchased;
+          item.purchased = false;
+        });
+        state.tripDate = todayISO();
+        saveState();
+        closeModal();
+        render();
+      }
+
+      function openModal() {
+        els.resetModal.hidden = false;
+        els.cancelReset.focus();
+      }
+
+      function closeModal() {
+        els.resetModal.hidden = true;
+        els.resetBtn.focus();
+      }
+
+      function sectionOrder(name) {
+        var i = sections.indexOf(name);
+        return i === -1 ? sections.length : i;
+      }
+
+      function render() {
+        var items = state.items;
+        var total = items.length;
+        var purchased = 0;
+        var carryover = 0;
+        var i;
+        for (i = 0; i < items.length; i++) {
+          if (items[i].purchased) purchased += 1;
+          if (items[i].carryover) carryover += 1;
+        }
+        var neu = total - carryover;
+
+        els.statPurchased.textContent = String(purchased);
+        els.statCarryover.textContent = String(carryover);
+        els.statNew.textContent = String(neu);
+        els.subtitle.textContent = formatDate(state.tripDate) + " · " + total + (total === 1 ? " item" : " items");
+        els.progressLabel.textContent = purchased + " of " + total + " purchased";
+        els.progressFill.style.width = (total ? (purchased / total) * 100 : 0) + "%";
+        els.hidePurchased.checked = !!state.hidePurchased;
+
+        var grouped = {};
+        var names = [];
+        sections.forEach(function (s) { grouped[s] = []; names.push(s); });
+        items.forEach(function (item) {
+          if (!grouped[item.section]) {
+            grouped[item.section] = [];
+            names.push(item.section);
+          }
+          grouped[item.section].push(item);
+        });
+        names.sort(function (a, b) { return sectionOrder(a) - sectionOrder(b); });
+
+        var root = els.sections;
+        root.textContent = "";
+
+        var shownAny = false;
+        names.forEach(function (sectionName) {
+          var list = grouped[sectionName] || [];
+          if (!list.length) return;
+          var done = 0;
+          var visible = [];
+          list.forEach(function (item) {
+            if (item.purchased) done += 1;
+            if (!(state.hidePurchased && item.purchased)) visible.push(item);
+          });
+          if (!visible.length) return;
+          shownAny = true;
+
+          var card = document.createElement("section");
+          card.className = "section";
+          card.setAttribute("data-section", sectionName);
+
+          var head = document.createElement("div");
+          head.className = "section-head";
+          var title = document.createElement("h2");
+          title.className = "section-title";
+          title.textContent = sectionName;
+          var count = document.createElement("div");
+          count.className = "section-count";
+          count.textContent = done + "/" + list.length;
+          head.appendChild(title);
+          head.appendChild(count);
+          card.appendChild(head);
+
+          visible.forEach(function (item) {
+            card.appendChild(renderItem(item));
+          });
+          root.appendChild(card);
+        });
+
+        if (!shownAny) {
+          var empty = document.createElement("p");
+          empty.className = "empty-note";
+          empty.textContent = total && state.hidePurchased ? "All items are purchased." : "No items yet. Add one below, or wait for the list to load.";
+          root.appendChild(empty);
+        }
+      }
+
+      function renderItem(item) {
+        var row = document.createElement("div");
+        row.className = "item" + (item.purchased ? " purchased" : "");
+        row.setAttribute("data-testid", "item");
+        row.setAttribute("data-id", item.id);
+        row.setAttribute("data-name", item.name);
+        row.setAttribute("data-source", item.source || "local");
+        row.setAttribute("data-purchased", item.purchased ? "true" : "false");
+        row.setAttribute("data-carryover", item.carryover ? "true" : "false");
+
+        var toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "item-main";
+        toggle.setAttribute("data-testid", "toggle-" + item.id);
+        toggle.setAttribute("aria-pressed", item.purchased ? "true" : "false");
+        toggle.setAttribute("aria-label", (item.purchased ? "Mark not purchased: " : "Mark purchased: ") + item.name);
+
+        var check = document.createElement("span");
+        check.className = "check";
+        check.setAttribute("aria-hidden", "true");
+        check.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+
+        var body = document.createElement("span");
+        body.className = "item-body";
+
+        var name = document.createElement("span");
+        name.className = "item-name";
+        name.textContent = item.name;
+        body.appendChild(name);
+
+        if (item.qty) {
+          var qty = document.createElement("span");
+          qty.className = "item-qty";
+          qty.textContent = item.qty;
+          body.appendChild(qty);
+        }
+
+        if (item.carryover) {
+          var tag = document.createElement("span");
+          tag.className = "tag";
+          tag.textContent = "carryover";
+          body.appendChild(tag);
+        }
+
+        toggle.appendChild(check);
+        toggle.appendChild(body);
+        toggle.addEventListener("click", function () { toggleItem(item.id); });
+
+        var del = document.createElement("button");
+        del.type = "button";
+        del.className = "delete-btn";
+        del.setAttribute("data-testid", "delete-" + item.id);
+        del.setAttribute("aria-label", "Delete " + item.name);
+        del.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>';
+        del.addEventListener("click", function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          deleteItem(item.id);
+        });
+
+        row.appendChild(toggle);
+        row.appendChild(del);
+        return row;
+      }
+
+      function populateSections() {
+        var current = els.addSection.value;
+        els.addSection.textContent = "";
+        sections.forEach(function (name) {
+          var opt = document.createElement("option");
+          opt.value = name;
+          opt.textContent = name;
+          els.addSection.appendChild(opt);
+        });
+        if (current && sections.indexOf(current) >= 0) els.addSection.value = current;
+      }
+
+      els.hidePurchased.addEventListener("change", function () {
+        state.hidePurchased = els.hidePurchased.checked;
+        saveState();
+        render();
+      });
+
+      els.addForm.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var name = els.addName.value.trim();
+        if (!name) return;
+        var section = els.addSection.value || sections[0];
+        var qty = els.addQty.value.trim();
+        addItem(name, section, qty);
+        els.addForm.reset();
+        els.addSection.value = section;
+        els.addName.focus();
+      });
+
+      els.resetBtn.addEventListener("click", openModal);
+      els.cancelReset.addEventListener("click", closeModal);
+      els.confirmReset.addEventListener("click", resetTrip);
+      els.resetModal.addEventListener("click", function (e) {
+        if (e.target === els.resetModal) closeModal();
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape" && !els.resetModal.hidden) closeModal();
+      });
+
+      if ("serviceWorker" in navigator) {
+        var swUrl = new URL("sw.js", window.location.href);
+        navigator.serviceWorker.register(swUrl.href, { scope: "./" }).catch(function (err) {
+          console.warn("Service worker registration failed", err);
+        });
+      }
+
+      populateSections();
+      render();
+      setSyncStatus("pending", "Updating list…");
+      syncFromServer();
+    })();
+  </script>
+
+</body>
+</html>
